@@ -141,6 +141,9 @@
             'user-images.githubusercontent.com' // 用户上传的图片
         ];
 
+        // 获取当前域名
+        const currentHost = window.location.host;
+
         function convertUrl() {
             const original = document.getElementById('originalUrl').value;
             if (!original) {
@@ -156,24 +159,24 @@
                     // 根据不同域名进行处理
                     switch(url.hostname) {
                         case 'api.github.com':
-                            newUrl = 'https://${host}/api' + url.pathname + url.search;
+                            newUrl = `https://${currentHost}/api${url.pathname}${url.search}`;
                             break;
                         case 'raw.githubusercontent.com':
                             const parts = url.pathname.split('/');
-                            newUrl = 'https://${host}/' + parts.slice(1).join('/') + url.search;
+                            newUrl = `https://${currentHost}/${parts.slice(1).join('/')}${url.search}`;
                             break;
                         case 'gist.githubusercontent.com':
-                            newUrl = 'https://${host}/gist' + url.pathname + url.search;
+                            newUrl = `https://${currentHost}/gist${url.pathname}${url.search}`;
                             break;
                         case 'codeload.github.com':
-                            newUrl = 'https://${host}/archive' + url.pathname + url.search;
+                            newUrl = `https://${currentHost}/archive${url.pathname}${url.search}`;
                             break;
                         case 'avatars.githubusercontent.com':
-                            newUrl = 'https://${host}/avatars' + url.pathname + url.search;
+                            newUrl = `https://${currentHost}/avatars${url.pathname}${url.search}`;
                             break;
                         default:
                             // github.com 和其他域名
-                            newUrl = 'https://${host}' + url.pathname + url.search;
+                            newUrl = `https://${currentHost}${url.pathname}${url.search}`;
                     }
                     
                     document.getElementById('proxyUrl').value = newUrl;
