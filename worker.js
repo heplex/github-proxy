@@ -19,6 +19,46 @@ export default {
 
     let targetURL = request.url;
     
+    // 处理 releases/latest/download 的特殊情况
+    if (url.pathname.includes('/releases/latest/download/')) {
+      const [_, user, repo, ...rest] = url.pathname.split('/');
+      const fileName = rest[rest.length - 1];
+      try {
+        const apiResponse = await fetch(`https://api.github.com/repos/${user}/${repo}/releases/latest`, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'GitHub-Proxy'
+          }
+        });
+        
+        if (apiResponse.ok) {
+          const releaseData = await apiResponse.json();
+          const downloadUrl = `https://github.com/${user}/${repo}/releases/download/${releaseData.tag_name}/${fileName}`;
+          
+          // 直接获取下载内容而不是重定向
+          const downloadResponse = await fetch(downloadUrl, {
+            headers: {
+              'User-Agent': 'GitHub-Proxy'
+            }
+          });
+          
+          if (downloadResponse.ok) {
+            const responseHeaders = new Headers(downloadResponse.headers);
+            responseHeaders.set('Access-Control-Allow-Origin', '*');
+            responseHeaders.set('Content-Disposition', `attachment; filename=${fileName}`);
+            
+            return new Response(downloadResponse.body, {
+              status: 200,
+              headers: responseHeaders
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest release for download:', error);
+        return new Response('下载失败', { status: 500 });
+      }
+    }
+
     // 处理 releases/latest 的特殊情况
     if (url.pathname.includes('/releases/latest')) {
       const repoPath = url.pathname.split('/releases/latest')[0].slice(1);
